@@ -127,9 +127,16 @@ int check_miller_rabin(long long num) {
 			long long r = 0;
 			for (r; r <= s - 1; r++) {
 				x = multiply_calculation_method_square(a, 2 ^ r*d, num);
+				if (x = (num - 1)) {
+					return 1;
+				}
 			}
 		}
+		else if (x = 1) {
+			break;
+		}
 	}
+	return 0;
 }
 
 
