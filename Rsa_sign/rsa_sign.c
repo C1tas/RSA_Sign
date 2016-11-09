@@ -20,7 +20,7 @@ struct my_binary {
 	int length;
 };
 
-long long gcd(long long a, long long b) {
+long long GCD(long long a, long long b) {
 	long long temp;
 	while (b != 0) {
 		temp = b;
@@ -44,7 +44,10 @@ struct my_binary trans_to_binary(long long num) {
 	return tmp_struct;
 }
 
-int check_prime_thounsand(long long num) {
+int check_prime_in_thounsand_prime(long long num) {
+	if (DEBUG) {
+		printf("Doing checking in thounsand prime...\n");
+	}
 	int i = 0;
 	
 	for (i; i < 168; i++) {
@@ -53,6 +56,10 @@ int check_prime_thounsand(long long num) {
 			return 1;
 		}
 		else if (remainder == 0) {
+			if (DEBUG) {
+				printf("%lld mod %d, and remainder is %lld.\n", num, thousand_prime[i], remainder);
+				printf("Thounsand checking faild, the num is a composite.\n\n");
+			}
 			return 0;
 		}
 		else {
@@ -96,16 +103,28 @@ long long multiply_calculation_method_square(long long x, long long n, long long
 
 
 /*
-要测试 {\displaystyle N} N是否为素数，首先将 {\displaystyle N-1} N-1分解为 
-{\displaystyle 2^{s}d} 2^{s}d。
-在每次测试开始时，先随机选一个介于 {\displaystyle [1,N-1]} [1,N-1]的整数 {\displaystyle a} a，
-之后如果对所有的 {\displaystyle r\in [0,s-1]} r\in [0,s-1]，
-若 {\displaystyle a^{d}\mod N\neq 1} a^{d}\mod N\neq 1
-且 {\displaystyle a^{2^{r}d}\mod N\neq -1} a^{{2^{{r}}d}}\mod N\neq -1，则N是合数。
-否则， {\displaystyle N} N有 {\displaystyle 3/4} 3/4的概率为素数。
+该算法用于判断一个大于 3 的奇数 n 是否素数。参数 k 用于决定 n 是素数的概率。
+该算法能够肯定地判断 n 是合数，但是只能说 n 可能是素数。
+第 01 行，将 n – 1 分解为 2s·d  的形式，这里 d 是奇数。
+第 02 行，将以下步骤(第 03 到 10 行)循环 k 次。
+第 03 行，◇在 [2, n - 2] 的范围中独立和随机地选择一个正整数 a 。
+第 04 行，◇计算该序列的第一个值：x ← ad mod n 。
+第 05 行，◇如果该序列的第一个数是 1 或者 n - 1，符合上述条件，n 可能是素数，转到第 03 行进行一下次循环。
+第 06 行，◇循环执行第 07 到 09 行，顺序遍历该序列剩下的 s – 1 个值。
+第 07 行，◇◇计算该序列的下一个值：x ← x2 mod n 。
+第 08 行，◇◇如果这个值是 1 ，但是前边的值不是 n - 1，不符合上述条件，因此 n 肯定是合数，算法结束。
+第 09 行，◇◇如果这个值是 n - 1，因此下一个值一定是 1，符合上述条件，n 可能是素数，转到第 03 行进行下一次循环。
+第 10 行，◇发现该序列不是以 1 结束，不符合上述条件，因此 n 肯定是合数，算法结束。
+第 11 行，已经对 k 个独立和随机地选择的 a 值进行了检验，因此判断 n 非常有可能是素数，算法结束。
+在一次检验中，该算法出错的可能顶多是四分之一。如果我们独立地和随机地选择 a 进行重复检验，一旦此算法报告 n 是合数，
+我们就可以确信 n 肯定不是素数。但如果此算法重复检验 25 次报告都报告说 n 可能是素数，
+则我们可以说 n “几乎肯定是素数”。
+因为这样一个 25 次的检验过程给出关于它的输入的错误信息的概率小于 (1/4)25。
+这种机会小于 1015 分之一。
 */
 int check_miller_rabin(long long num) {
-	long long d, a, r, s, t;
+	printf("Doing Miller_Rabin checking...\nChecking Num is %lld\n", num);
+	long long d, s, t;
 	d = num - 1;
 	s = 0;
 	t = 5;
@@ -117,32 +136,49 @@ int check_miller_rabin(long long num) {
 	
 	while (k < t) {
 		//srand((unsigned)time(NULL));
-		long long a = rand() % (d - 1 + 1) + 1;
+		long long a = rand() % (num - 1 - 2 + 1) + 2;
+		if (DEBUG) {
+			printf("The random num a is %lld, the factor d is %lld, the factor s is %lld.\n", a, d, s);
+		}
+		
 		k += 1;
-		if (gcd(a, num) != 1) {
+		if (GCD(a, num) != 1) {
 			continue;
 		}
 		long long x = multiply_calculation_method_square(a, d, num);
-		if (x != 1) {
+		if (DEBUG) {
+			printf("The result of a**d mod N is %lld.\n", x);
+		}
+		if (x == 1 || x == num - 1) {
+			continue;
+		}
+		else {
 			long long r = 0;
 			for (r; r <= s - 1; r++) {
-				x = multiply_calculation_method_square(a, 2 ^ r*d, num);
-				if (x = (num - 1)) {
-					return 1;
+				long long n_x = multiply_calculation_method_square(a, 2 ^ r*d, num);
+				if (DEBUG) {
+					printf("The result of %lld in (0, s-1) , (a**(d * 2**r)):%lld**(%lld * 2**%lld) mod N is %lld.\n", r, a, d, r, x);
+				}
+				if (n_x == (num - 1)) {
+					continue;
+				}
+				else if (n_x == 1 && x != num - 1) {
+					printf("Mailler_Rabin checking faild, the num is a composite.\n\n");
+					return 0;
 				}
 			}
 		}
-		else if (x = 1) {
-			break;
-		}
 	}
-	return 0;
+	return 1;
 }
 
+long long randPrime(long long min_border, long long border) {
+
+}
 
 int main(void) {
 	int x = 5, y = 20, z = 3;
-	srand(time(NULL));
+	srand((unsigned int)time(NULL));
 	// printf("%lld", repeat_calculation_method_square(x, y, z));
 
 	long long num = 8;
@@ -151,9 +187,12 @@ int main(void) {
 
 	// printf("%lld\n", multiply_calculation_method_square(7, 17, 9));
 
-	long long prime = 7368811;
+	long long prime = 9;
+	// long long prime = 7368811;
 	// printf("%d", check_prime_thounsand(prime));
 	//srand((unsigned)time(NULL));
-	printf("%d.\n", check_miller_rabin(prime));
+	check_prime_in_thounsand_prime(prime);
+	check_miller_rabin(prime);
+
 	getchar();
 }
