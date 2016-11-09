@@ -24,7 +24,13 @@ struct my_binary {
 };
 
 long long GCD(long long a, long long b) {
+	
 	long long temp;
+	if (a < b) {
+		temp = a;
+		a = b;
+		b = temp;
+	}
 	while (b != 0) {
 		temp = b;
 		b = a % b;
@@ -75,6 +81,7 @@ int check_prime_in_thounsand_prime(long long num) {
 	return 1;
 }
 
+//模重复平方
 long long repeat_calculation_method_square(long long x, long long n, long long m) {
 	long long a = 1, b = x; //i=0的时候b = x^(2^0) = x
 	while (n)
@@ -87,6 +94,7 @@ long long repeat_calculation_method_square(long long x, long long n, long long m
 	return a;
 }
 
+//平方乘方法
 long long multiply_calculation_method_square(long long x, long long n, long long m) {
 	struct my_binary tmp_binary;
 	long long remainder = 1;
@@ -139,6 +147,7 @@ int check_miller_rabin(long long num) {
 	
 	while (k < t) {
 		//srand((unsigned)time(NULL));
+		printf("This the %d time.\n", k);
 		long long a = rand() % (num - 1 - 2 + 1) + 2;
 		if (DEBUG) {
 			printf("The random num a is %lld, the factor d is %lld, the factor s is %lld.\n", a, d, s);
@@ -180,29 +189,68 @@ int probale_prime(long long num) {
 		return 1;
 	else if (num % 2 == 0 || num == 1) 
 		return 0;
+	if (!check_prime_in_thounsand_prime(num))
+		return 0;
 	if (!check_miller_rabin(num))
 		return 0;
 	
 	return 1;
 }
 
-long long rand_prime(long long min_border, long long max_border) {
+long long random_prime(long long min_border, long long max_border) {
 	long long new_range = (max_border - min_border + 1) + min_border;
+	
 	long long prime = rand() % new_range;
 	new_range += new_range % 2;
 	prime += 1 - prime % 2;
 	while (1){
-		if (probale_prime(prime))
+		if (probale_prime(prime)) {
 			return prime;
+		}
+
 		prime = (prime + 2) % new_range;
 	}
 
 }
 
+//求得e^-1 mod modulus method
+
+long long ext_gcd(long long e, long long modulus) {
+	long long a = e % modulus, b = modulus;
+	long long x = 0, y = 1, x0 = 1, y0 = 0, q, temp;
+	if (GCD(a, b) != 1) {
+		return -1;
+	}
+	else {
+		while (a != 0) {
+			q = b / a;
+			temp = b % a;
+			b = a;
+			a = temp;
+			temp = x; 
+			x = x0 - q * x; 
+			x0 = temp;
+			temp = y; 
+			y = y0 - q * y; 
+			y0 = temp;
+		}
+		if (y0 < 0)
+			y0 += modulus;
+
+		return y0;
+	}
+}
+
+long long encode(long long m, long long e, long long modulus) {
+	return repeat_calculation_method_square(m, e, modulus);
+}
+
+long long decode(long long c, long long d, long long modulus) {
+	return multiply_calculation_method_square(c, d, modulus);
+}
+
 int main(void) {
-	int x = 5, y = 20, z = 3;
 	srand((unsigned int)time(NULL));
-	// printf("%lld", repeat_calculation_method_square(x, y, z));
 
 	long long num = 8;
 	struct my_binary demo_binary;
@@ -214,8 +262,26 @@ int main(void) {
 	// long long prime = 7368811;
 	// printf("%d", check_prime_thounsand(prime));
 	//srand((unsigned)time(NULL));
-	check_prime_in_thounsand_prime(prime);
-	check_miller_rabin(prime);
+	/*long long prime_1 = random_prime(1024, 2048);
+	long long prime_2 = random_prime(65536, 131072);
+	printf("the random_prime_1 is %lld.\n", prime_1);
+	printf("the random_prime_2 is %lld.\n", prime_2);
+*/
+	long long prime_1 = 61;
+	long long prime_2 = 53;
+	long long n = prime_1 * prime_2;
+	
+	long long fain = (prime_1 - 1) * (prime_2 - 1);
+	long long d = ext_gcd(17, fain);
+
+	printf("%lld.\n", repeat_calculation_method_square(2763, 2753, 32655));
+	printf("%lld.\n", multiply_calculation_method_square(2763, 2753, 32655));
+	
+	printf("The key d is %lld.\n", ext_gcd(17, 3120));
+	long long cipertext = encode(32665, 17, n);
+	printf("The cleartext is \"%d\", and the corresponding cipertext is %lld.\n", 32665, cipertext);
+	long long cleartext = decode(cipertext, d, n);
+	printf("The cipertext is \"%d\", and the corresponding cleartext is %lld.\n", cipertext, cleartext);
 
 	getchar();
 }

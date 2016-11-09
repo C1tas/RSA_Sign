@@ -158,14 +158,14 @@ int readFile(FILE* fd, char** buffer, int bytes) {
 /**
 * Encode the message m using public exponent and modulus, c = m^e mod n
 */
-int encode(int m, int e, int n) {
+int encode1(int m, int e, int n) {
 	return modpow(m, e, n);
 }
 
 /**
 * Decode cryptogram c using private exponent and public modulus, m = c^d mod n
 */
-int decode(int c, int d, int n) {
+int decode1(int c, int d, int n) {
 	return modpow(c, d, n);
 }
 
