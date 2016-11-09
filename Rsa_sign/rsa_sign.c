@@ -102,7 +102,8 @@ long long multiply_calculation_method_square(long long x, long long n, long long
 	int i = tmp_binary.length;
 	for (i; i >= 0; i--) {
 		if (tmp_binary.binary[i]) {
-			remainder = remainder*remainder * x % m;
+			remainder = remainder*remainder % m;
+			remainder = remainder * x % m;
 		}
 		else {
 			remainder = remainder*remainder % m;
@@ -198,17 +199,23 @@ int probale_prime(long long num) {
 }
 
 long long random_prime(long long min_border, long long max_border) {
-	long long new_range = (max_border - min_border + 1) + min_border;
+	long long new_range = (max_border - min_border + 1);
 	
-	long long prime = rand() % new_range;
+	long long prime = rand() % new_range + min_border;
 	new_range += new_range % 2;
 	prime += 1 - prime % 2;
 	while (1){
 		if (probale_prime(prime)) {
 			return prime;
 		}
-
-		prime = (prime + 2) % new_range;
+		prime += 2;
+		if (prime > max_border) {
+			prime = prime % max_border;
+			prime += min_border;
+		}
+		
+		
+		// prime = (prime + 2) % new_range + min_border;
 	}
 
 }
@@ -258,30 +265,38 @@ int main(void) {
 
 	// printf("%lld\n", multiply_calculation_method_square(7, 17, 9));
 
-	long long prime = 9;
 	// long long prime = 7368811;
 	// printf("%d", check_prime_thounsand(prime));
 	//srand((unsigned)time(NULL));
-	/*long long prime_1 = random_prime(1024, 2048);
-	long long prime_2 = random_prime(65536, 131072);
-	printf("the random_prime_1 is %lld.\n", prime_1);
-	printf("the random_prime_2 is %lld.\n", prime_2);
-*/
-	long long prime_1 = 61;
-	long long prime_2 = 53;
-	long long n = prime_1 * prime_2;
-	
-	long long fain = (prime_1 - 1) * (prime_2 - 1);
-	long long d = ext_gcd(17, fain);
+	while (1) {
+		long long prime_1 = random_prime(1024, 2048);
+		long long prime_2 = random_prime(65536, 131072);
+		printf("\n");
+		printf("The random_prime_1 is %lld.\n", prime_1);
+		printf("The random_prime_2 is %lld.\n", prime_2);
 
-	printf("%lld.\n", repeat_calculation_method_square(2763, 2753, 32655));
-	printf("%lld.\n", multiply_calculation_method_square(2763, 2753, 32655));
+		/*long long prime_1 = 1259;
+		long long prime_2 = 80897;*/
+		long long n = prime_1 * prime_2;
+
+		long long fain = (prime_1 - 1) * (prime_2 - 1);
+		printf("The result of Euler function is %lld.\n", fain);
+		if (GCD(17, fain) == 1) {
+			printf("The result of GCD(fain, 17) == 1.\n");
+			long long d = ext_gcd(17, fain);
+			printf("The num n is %lld.\n", n);
+
+			printf("The key d is %lld.\n", d);
+			long long cipertext = encode(32655, 17, n);
+			printf("The cleartext is \"%d\", and the corresponding cipertext is %lld.\n", 32655, cipertext);
+			long long cleartext = decode(cipertext, d, n);
+			printf("The cipertext is \"%lld\", and the corresponding cleartext is %lld.\n", cipertext, cleartext);
+			break;
+		}
+		
+	}
 	
-	printf("The key d is %lld.\n", ext_gcd(17, 3120));
-	long long cipertext = encode(32665, 17, n);
-	printf("The cleartext is \"%d\", and the corresponding cipertext is %lld.\n", 32665, cipertext);
-	long long cleartext = decode(cipertext, d, n);
-	printf("The cipertext is \"%d\", and the corresponding cleartext is %lld.\n", cipertext, cleartext);
+	
 
 	getchar();
 }
