@@ -1,3 +1,6 @@
+#define _CRT_SECURE_NO_WARNINGS
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h> 
@@ -172,7 +175,27 @@ int check_miller_rabin(long long num) {
 	return 1;
 }
 
-long long randPrime(long long min_border, long long border) {
+int probale_prime(long long num) {
+	if (num == 2)
+		return 1;
+	else if (num % 2 == 0 || num == 1) 
+		return 0;
+	if (!check_miller_rabin(num))
+		return 0;
+	
+	return 1;
+}
+
+long long rand_prime(long long min_border, long long max_border) {
+	long long new_range = (max_border - min_border + 1) + min_border;
+	long long prime = rand() % new_range;
+	new_range += new_range % 2;
+	prime += 1 - prime % 2;
+	while (1){
+		if (probale_prime(prime))
+			return prime;
+		prime = (prime + 2) % new_range;
+	}
 
 }
 
